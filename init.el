@@ -36,15 +36,28 @@
 (tooltip-mode -1)
 (menu-bar-mode -1)
 (tool-bar-mode -1)
-(global-display-line-numbers-mode 1)
-(global-visual-line-mode t)
+
+(column-number-mode)
+(global-display-line-numbers-mode t)
+(setq next-line-add-newlines t)
+(dolist (mode '(org-mode-hook
+                term-mode-hook
+                shell-mode-hook
+		vterm-mode-hook
+                eshell-mode-hook))
+  (add-hook mode (lambda () (display-line-numbers-mode 0))))
+
+
+
 (set-face-attribute 'default nil :family "JetBrains Mono" :height 120)
+;;(load-theme 'zenburn t)
+(use-package doom-themes
+  :init (load-theme 'doom-nova t))
 
+(use-package doom-modeline
+  :init (doom-modeline-mode 1)
+  :custom ((doom-modeline-height 15)))
 
-(use-package apropospriate-theme
-  :ensure t
-  :config 
-  (load-theme 'apropospriate-dark t))
 
 (use-package all-the-icons)
 
@@ -77,6 +90,16 @@
 ;; :underline nil
 ;;)
 
+;;Open project
+(use-package projectile
+  :diminish projectile-mode
+  :config (projectile-mode)
+  :bind-keymap
+  ("C-c p" . projectile-command-map)
+  :init
+  (when (file-directory-p "~/dev")
+    (setq projectile-project-search-path '("~/dev")))
+  (setq projectile-switch-project-action #'projectile-dired))
 
 ;;Vertico
 (use-package vertico
@@ -107,16 +130,6 @@
   :custom
   (completion-styles '(orderless basic))
   (completion-category-overrides '((file (styles basic partial-completion)))))
-
-
-;;Embark
-(use-package embark
-  :ensure t
-
-  :bind
-  (("C-." . embark-act) ;; pick some comfortable binding
-  ("C-;" . embark-dwim) ;; good alternative: M-.
-  ("C-h B" . embark-bindings)))
 
 ;;Consult(default)
 (use-package consult
@@ -216,22 +229,13 @@
 
   ;; Optionally configure the narrowing key.
   ;; Both < and C-+ work reasonably well.
-  (setq consult-narrow-key "<") ;; "C-+"
-  )
+  (setq consult-narrow-key "<"))
 
-(use-package consult-dir
-  :ensure t
-  :bind (("C-x C-d" . consult-dir)
-         :map minibuffer-local-completion-map
-         ("C-x C-d" . consult-dir)
-         ("C-x C-j" . consult-dir-jump-file)))
-
-
+;;Ace-window
 (use-package ace-window
   :ensure t
   :bind
   (("M-o" . ace-window)))
-
 
 ;;Reverse-im
 (use-package reverse-im
@@ -255,7 +259,7 @@
   :bind
   (("C-c g" . magit-status)))
 
-;;Dev
+; ==================DEV==================
 (use-package flycheck
   :ensure t
   :hook ((emacs-lisp-mode clojure-mode) . flycheck-mode))
@@ -272,17 +276,22 @@
   :init
   (paredit-mode))
 
-
 ;;Terminal
 (use-package vterm)
 
-;;Open project
-(use-package projectile
-  :diminish projectile-mode
-  :config (projectile-mode)
-  :bind-keymap
-  ("C-c p" . projectile-command-map)
-  :init
-  (when (file-directory-p "~/dev")
-    (setq projectile-project-search-path '("~/dev")))
-  (setq projectile-switch-project-action #'projectile-dired))
+;;Common Lisp
+(use-package sly :ensure t)
+
+;;Frontend
+(use-package prettier-js :ensure t)
+(use-package yaml-mode :ensure t)
+(use-package json-mode :ensure t)
+
+;;Rss
+(use-package elfeed
+  :ensure t
+  :config
+  (setq elfeed-feeds
+        '("https://planet.emacslife.com/atom.xml"
+          "https://sachachua.com/blog/feed/"
+          "https://hnrss.org/frontpage")))
