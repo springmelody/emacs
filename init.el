@@ -12,6 +12,24 @@
 ;;Y-N
 (defalias 'yes-or-no-p 'y-or-n-p)
 
+;;Evil
+
+(use-package evil																		    ;;
+  :ensure t																				    ;;
+  :init																					    ;;
+  (setq evil-want-integration t) ;; This is optional since it's already set to t by default. ;;
+  (setq evil-want-keybinding nil)														    ;;
+  :config																				    ;;
+  (evil-mode 1))																			    ;;
+																							    ;;
+(use-package evil-collection																    ;;
+  :after evil																			    ;;
+  :ensure t																				    ;;
+  :config																				    ;;
+  (evil-collection-init))																    ;;
+
+ 
+
 ;; Initialize package sources
 (require 'package)
 
@@ -36,7 +54,13 @@
 (tooltip-mode -1)
 (menu-bar-mode -1)
 (tool-bar-mode -1)
-
+(setq-default fill-column 80)
+(setq-default indent-tabs-mode nil)
+(setq-default tab-width          4)
+(setq-default c-basic-offset     4)
+(setq-default standart-indent    4)
+(setq-default lisp-body-indent   2)
+(setq lisp-indent-function  'common-lisp-indent-function)
 (column-number-mode)
 (global-display-line-numbers-mode t)
 (setq next-line-add-newlines t)
@@ -46,8 +70,6 @@
 		vterm-mode-hook
                 eshell-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
-
-
 
 (set-face-attribute 'default nil :family "JetBrains Mono" :height 120)
 ;;(load-theme 'zenburn t)
@@ -73,22 +95,6 @@
                           (bookmarks . 3)
                           (projects . 3)
                           (registers . 3))))
-
-;;(set-face-attribute 'mode-line nil
-;;:background ""
-;;:foreground ""
-;;:box '(:line-width 8 :color "")
-;; :overline nil
-;; :underline nil
-;;)
-
-;;(set-face-attribute 'mode-line-inactive nil
-;;:background ""
-;;foreground ""
-;; :box '(:line-width 8 :color "")
-;; :overline nil
-;; :underline nil
-;;)
 
 ;;Open project
 (use-package projectile
@@ -123,7 +129,6 @@
 (use-package avy)
 (global-set-key (kbd "M-j") 'avy-goto-char-timer)
 
-
 ;;Orderless
 (use-package orderless
   :ensure t
@@ -133,7 +138,6 @@
 
 ;;Consult(default)
 (use-package consult
-  ;; Replace bindings. Lazily loaded due by `use-package'.
   :bind (;; C-c bindings (mode-specific-map)
          ("C-c M-x" . consult-mode-command)
          ("C-c h" . consult-history)
@@ -141,20 +145,16 @@
          ("C-c m" . consult-man)
          ("C-c i" . consult-info)
          ([remap Info-search] . consult-info)
-         ;; C-x bindings (ctl-x-map)
          ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
          ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
          ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
          ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
          ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
          ("C-x p b" . consult-project-buffer)      ;; orig. project-switch-to-buffer
-         ;; Custom M-# bindings for fast register access
          ("M-#" . consult-register-load)
          ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
          ("C-M-#" . consult-register)
-         ;; Other custom bindings
          ("M-y" . consult-yank-pop)                ;; orig. yank-pop
-         ;; M-g bindings (goto-map)
          ("M-g e" . consult-compile-error)
          ("M-g f" . consult-flymake)               ;; Alternative: consult-flycheck
          ("M-g g" . consult-goto-line)             ;; orig. goto-line
@@ -164,7 +164,6 @@
          ("M-g k" . consult-global-mark)
          ("M-g i" . consult-imenu)
          ("M-g I" . consult-imenu-multi)
-         ;; M-s bindings (search-map)
          ("M-s d" . consult-find)
          ("M-s D" . consult-locate)
          ("M-s g" . consult-grep)
@@ -174,61 +173,36 @@
          ("M-s L" . consult-line-multi)
          ("M-s k" . consult-keep-lines)
          ("M-s u" . consult-focus-lines)
-         ;; Isearch integration
          ("M-s e" . consult-isearch-history)
          :map isearch-mode-map
          ("M-e" . consult-isearch-history)         ;; orig. isearch-edit-string
          ("M-s e" . consult-isearch-history)       ;; orig. isearch-edit-string
          ("M-s l" . consult-line)                  ;; needed by consult-line to detect isearch
          ("M-s L" . consult-line-multi)            ;; needed by consult-line to detect isearch
-         ;; Minibuffer history
          :map minibuffer-local-map
          ("M-s" . consult-history)                 ;; orig. next-matching-history-element
          ("M-r" . consult-history))                ;; orig. previous-matching-history-element
 
-  ;; Enable automatic preview at point in the *Completions* buffer. This is
-  ;; relevant when you use the default completion UI.
   :hook (completion-list-mode . consult-preview-at-point-mode)
 
-  ;; The :init configuration is always executed (Not lazy)
   :init
-
-  ;; Optionally configure the register formatting. This improves the register
-  ;; preview for `consult-register', `consult-register-load',
-  ;; `consult-register-store' and the Emacs built-ins.
   (setq register-preview-delay 0.5
         register-preview-function #'consult-register-format)
-
-  ;; Optionally tweak the register preview window.
-  ;; This adds thin lines, sorting and hides the mode line of the window.
   (advice-add #'register-preview :override #'consult-register-window)
 
   ;; Use Consult to select xref locations with preview
   (setq xref-show-xrefs-function #'consult-xref
         xref-show-definitions-function #'consult-xref)
 
-  ;; Configure other variables and modes in the :config section,
-  ;; after lazily loading the package.
   :config
-
-  ;; Optionally configure preview. The default value
-  ;; is 'any, such that any key triggers the preview.
-  ;; (setq consult-preview-key 'any)
-  ;; (setq consult-preview-key "M-.")
-  ;; (setq consult-preview-key '("S-<down>" "S-<up>"))
-  ;; For some commands and buffer sources it is useful to configure the
-  ;; :preview-key on a per-command basis using the `consult-customize' macro.
   (consult-customize
    consult-theme :preview-key '(:debounce 0.2 any)
    consult-ripgrep consult-git-grep consult-grep
    consult-bookmark consult-recent-file consult-xref
    consult--source-bookmark consult--source-file-register
    consult--source-recent-file consult--source-project-recent-file
-   ;; :preview-key "M-."
    :preview-key '(:debounce 0.4 any))
 
-  ;; Optionally configure the narrowing key.
-  ;; Both < and C-+ work reasonably well.
   (setq consult-narrow-key "<"))
 
 ;;Ace-window
@@ -286,12 +260,11 @@
 (use-package prettier-js :ensure t)
 (use-package yaml-mode :ensure t)
 (use-package json-mode :ensure t)
-
 ;;Rss
 (use-package elfeed
-  :ensure t
-  :config
-  (setq elfeed-feeds
-        '("https://planet.emacslife.com/atom.xml"
-          "https://sachachua.com/blog/feed/"
-          "https://hnrss.org/frontpage")))
+    :ensure t
+    :config
+    (setq elfeed-feeds
+          '("https://planet.emacslife.com/atom.xml"
+            "https://sachachua.com/blog/feed/"
+            "https://hnrss.org/frontpage")))
